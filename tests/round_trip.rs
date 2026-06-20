@@ -1,8 +1,8 @@
 use meta_signal_mentci::{
-    ComponentKind, ConfigurationGeneration, ConfigurationRejected, ConfigurationRejectionReason,
-    Frame, FrameBody, Input, MentciDaemonConfiguration, NotificationClient, OperationKind, Output,
-    PersonaIdentity, PersonaKeyLabel, PersonaName, RequestUnimplemented, StandardSocket,
-    UnimplementedReason,
+    ComponentKind, ComponentSocket, ComponentSocketKind, ConfigurationGeneration,
+    ConfigurationRejected, ConfigurationRejectionReason, Frame, FrameBody, Input,
+    MentciDaemonConfiguration, NotificationClient, OperationKind, Output, PersonaIdentity,
+    PersonaKeyLabel, PersonaName, RequestUnimplemented, StandardSocket, UnimplementedReason,
 };
 use nota_next::{NotaDecode, NotaEncode, NotaSource};
 use signal_frame::{
@@ -20,8 +20,16 @@ fn exchange() -> ExchangeIdentifier {
 
 fn configuration() -> MentciDaemonConfiguration {
     MentciDaemonConfiguration::new(
-        StandardSocket::unix("/run/user/1000/mentci.socket"),
-        StandardSocket::unix("/run/user/1000/criome.socket"),
+        vec![
+            ComponentSocket::new(
+                ComponentSocketKind::Mentci,
+                StandardSocket::unix("/run/user/1000/mentci.socket"),
+            ),
+            ComponentSocket::new(
+                ComponentSocketKind::MetaCriome,
+                StandardSocket::unix("/run/user/1000/criome-meta.socket"),
+            ),
+        ],
         PersonaIdentity::new(
             PersonaName::new("psyche"),
             ComponentKind::Persona,
@@ -107,4 +115,16 @@ fn reply_variants_round_trip() {
 fn configuration_generation_projects_to_integer() {
     let generation = ConfigurationGeneration::new(11);
     assert_eq!(generation.value(), 11);
+}
+
+#[test]
+fn configuration_finds_socket_by_component_lane() {
+    let configuration = configuration();
+    let socket = configuration
+        .component_socket(ComponentSocketKind::MetaCriome)
+        .expect("meta criome socket");
+    assert_eq!(
+        socket.socket.payload().as_str(),
+        "/run/user/1000/criome-meta.socket"
+    );
 }

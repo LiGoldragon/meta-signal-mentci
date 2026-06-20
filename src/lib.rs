@@ -27,6 +27,12 @@ impl StandardSocket {
     }
 }
 
+impl ComponentSocket {
+    pub fn new(kind: ComponentSocketKind, socket: StandardSocket) -> Self {
+        Self { kind, socket }
+    }
+}
+
 impl PersonaIdentity {
     pub fn new(
         persona: PersonaName,
@@ -43,16 +49,24 @@ impl PersonaIdentity {
 
 impl MentciDaemonConfiguration {
     pub fn new(
-        socket_path: StandardSocket,
-        home_criome_socket: StandardSocket,
+        component_sockets: Vec<ComponentSocket>,
         persona_identity: PersonaIdentity,
         notification_clients: Vec<NotificationClient>,
     ) -> Self {
         Self {
-            socket_path,
-            home_criome_socket,
+            component_sockets: ComponentSockets::new(component_sockets),
             persona_identity,
             notification_clients: NotificationClients::new(notification_clients),
         }
+    }
+
+    pub fn component_sockets(&self) -> &[ComponentSocket] {
+        self.component_sockets.payload().as_slice()
+    }
+
+    pub fn component_socket(&self, kind: ComponentSocketKind) -> Option<&ComponentSocket> {
+        self.component_sockets()
+            .iter()
+            .find(|component_socket| component_socket.kind == kind)
     }
 }

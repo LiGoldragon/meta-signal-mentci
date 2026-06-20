@@ -21,8 +21,7 @@
 ;;
 ;; MentciDaemonConfiguration carries the daemon's startup + reconfiguration
 ;; policy (Spirit 7x5z — the state-bearing programmable-UI daemon):
-;;   socket_path           — where mentci itself listens (eaf7 connection-point)
-;;   home_criome_socket    — which criome to ask for verdict signing (eaf7)
+;;   component_sockets     — typed component connection-points by authority lane
 ;;   persona_identity      — the persona Identity that is the signing principal
 ;;   notification_clients  — which notification surfaces are enabled
 ;;
@@ -88,9 +87,9 @@
   ;; StandardSocket — the eaf7 typed connection-point. A typed Unix-socket
   ;; path is the local case; the network host+port case is the off-box
   ;; extension, deliberately not modeled in this single-machine UI-daemon
-  ;; slice (Q3 confirms single-machine scope). Two consumers in this
-  ;; contract: where mentci listens, and which criome it dials for verdict
-  ;; signing.
+  ;; slice (Q3 confirms single-machine scope). It is always wrapped in a
+  ;; ComponentSocket so every path carries the component and authority lane it
+  ;; reaches.
   ;; (cross-import target: signal-standard:lib:StandardSocket — the standard
   ;;  connection-point type; deferred while signal-standard is not yet a
   ;;  crate. signal-criome's own socket is NOT cross-imported either: that
@@ -98,6 +97,23 @@
   ;; -------------------------------------------------------------------
   StandardSocket {
     path.SocketPath
+  }
+
+  ;; -------------------------------------------------------------------
+  ;; ComponentSocket — one typed connection-point for a component authority
+  ;; lane. Mentci can connect to multiple components, so socket paths are not
+  ;; positional "ordinary/meta" fields. The kind names both the component and
+  ;; whether the socket is its working or meta-policy channel.
+  ;; -------------------------------------------------------------------
+  ComponentSocketKind [
+    Mentci
+    MetaMentci
+    Criome
+    MetaCriome
+  ]
+  ComponentSocket {
+    kind.ComponentSocketKind
+    socket.StandardSocket
   }
 
   ;; -------------------------------------------------------------------
@@ -157,13 +173,11 @@
   ;; MentciDaemonConfiguration — the daemon startup + reconfiguration
   ;; message. THIS is the binary rkyv blob a deploy/bootstrap tool encodes
   ;; and hands the daemon (component override: daemons never parse NOTA,
-  ;; configuration included). Carries: where mentci listens, which criome it
-  ;; dials for verdict signing, the persona signing principal, and which
-  ;; notification surfaces are enabled.
+  ;; configuration included). Carries: typed component sockets, the persona
+  ;; signing principal, and which notification surfaces are enabled.
   ;; -------------------------------------------------------------------
   MentciDaemonConfiguration {
-    socket_path.StandardSocket
-    home_criome_socket.StandardSocket
+    (ComponentSockets (Vector ComponentSocket))
     PersonaIdentity
     (NotificationClients (Vector NotificationClient))
   }

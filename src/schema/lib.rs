@@ -50,6 +50,33 @@ pub struct StandardSocket(SocketPath);
     PartialEq,
     Eq,
 )]
+pub enum ComponentSocketKind {
+    Mentci,
+    MetaMentci,
+    Criome,
+    MetaCriome,
+}
+
+#[rustfmt::skip]
+#[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct ComponentSocket {
+    pub kind: ComponentSocketKind,
+    pub socket: StandardSocket,
+}
+
+#[rustfmt::skip]
+#[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
+#[derive(
+    rkyv::Archive,
+    rkyv::Serialize,
+    rkyv::Deserialize,
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+)]
 pub enum ComponentKind {
     Spirit,
     Mind,
@@ -97,14 +124,18 @@ pub enum NotificationClient {
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
+pub(crate) struct ComponentSockets(Vec<ComponentSocket>);
+
+#[rustfmt::skip]
+#[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
+#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub(crate) struct NotificationClients(Vec<NotificationClient>);
 
 #[rustfmt::skip]
 #[cfg_attr(feature = "nota-text", derive(nota_next::NotaDecode, nota_next::NotaEncode))]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct MentciDaemonConfiguration {
-    pub socket_path: StandardSocket,
-    pub home_criome_socket: StandardSocket,
+    pub(crate) component_sockets: ComponentSockets,
     pub persona_identity: PersonaIdentity,
     pub(crate) notification_clients: NotificationClients,
 }
@@ -285,6 +316,25 @@ impl StandardSocket {
 #[rustfmt::skip]
 impl From<SocketPath> for StandardSocket {
     fn from(payload: SocketPath) -> Self {
+        Self::new(payload)
+    }
+}
+
+#[rustfmt::skip]
+impl ComponentSockets {
+    pub fn new(payload: Vec<ComponentSocket>) -> Self {
+        Self(payload)
+    }
+    pub fn payload(&self) -> &Vec<ComponentSocket> {
+        &self.0
+    }
+    pub fn into_payload(self) -> Vec<ComponentSocket> {
+        self.0
+    }
+}
+#[rustfmt::skip]
+impl From<Vec<ComponentSocket>> for ComponentSockets {
+    fn from(payload: Vec<ComponentSocket>) -> Self {
         Self::new(payload)
     }
 }
