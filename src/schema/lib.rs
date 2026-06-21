@@ -55,6 +55,8 @@ pub enum ComponentSocketKind {
     MetaMentci,
     Criome,
     MetaCriome,
+    Introspect,
+    MetaIntrospect,
 }
 
 #[rustfmt::skip]

@@ -110,6 +110,8 @@
     MetaMentci
     Criome
     MetaCriome
+    Introspect
+    MetaIntrospect
   ]
   ComponentSocket {
     kind.ComponentSocketKind
