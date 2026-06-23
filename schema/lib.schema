@@ -179,9 +179,9 @@
   ;; signing principal, and which notification surfaces are enabled.
   ;; -------------------------------------------------------------------
   MentciDaemonConfiguration {
-    (ComponentSockets (Vector ComponentSocket))
+    ComponentSockets.(Vector ComponentSocket)
     PersonaIdentity
-    (NotificationClients (Vector NotificationClient))
+    NotificationClients.(Vector NotificationClient)
   }
 
   ;; -------------------------------------------------------------------
