@@ -4,7 +4,7 @@ use meta_signal_mentci::{
     MentciDaemonConfiguration, NotificationClient, OperationKind, Output, PersonaIdentity,
     PersonaKeyLabel, PersonaName, RequestUnimplemented, StandardSocket, UnimplementedReason,
 };
-use nota_next::{NotaDecode, NotaEncode, NotaSource};
+use nota::{NotaDecode, NotaEncode, NotaSource};
 use signal_frame::{
     ExchangeIdentifier, ExchangeLane, LaneSequence, NonEmpty, Reply, RequestPayload, SessionEpoch,
     SubReply,
