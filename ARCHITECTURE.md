@@ -4,6 +4,10 @@
 daemon. It is schema-derived wire vocabulary over `signal-frame`, with optional
 NOTA projection for edge clients.
 
+## 0.5 · Direction
+
+`meta-signal-mentci` is the meta policy contract for the Mentci daemon. Ordinary programmable-UI traffic lives in `signal-mentci`; this crate carries the single `Configure` request that provides the binary startup/reconfiguration message — socket endpoints, home criome socket, persona identity, and enabled notification clients. Daemons accept binary rkyv startup/meta messages, not inline NOTA or `.nota` paths.
+
 ## Owned
 
 - `Configure MentciDaemonConfiguration`.
