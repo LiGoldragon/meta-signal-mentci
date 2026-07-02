@@ -51,8 +51,8 @@
 ;; name that differs from its type is written field.Type (dot form); a field
 ;; whose name equals the snake-case of its type is written as the bare type
 ;; (derived name) — writing field.Type there is a RedundantExplicitFieldRole
-;; error; a collection field carries its role as a Type-cased head,
-;; (FieldRole (Vector Element)), whose snake-case becomes the field name. The
+;; error; a collection field carries its role as a dot-bound field name,
+;; FieldRole.(Vector Element), whose snake-case becomes the field name. The
 ;; retired two-atom  field Type  pair no longer lowers. A single-field brace
 ;; collapses to a NEWTYPE over its one reference, so StandardSocket, Configured,
 ;; and ConfigurationRejected lower as newtypes carrying exactly the one-field
