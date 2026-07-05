@@ -46,7 +46,7 @@
 ;;     StandardSocket signal-standard:lib:StandardSocket }
 ;; with no other change to the verb roster or the configuration shape.
 ;;
-;; GRAMMAR NOTE (current schema-next main, b3be7d0 — past abae95f). The
+;; GRAMMAR NOTE (current schema main, b3be7d0 — past abae95f). The
 ;; positional struct-field grammar uses explicit field roles: a field with a
 ;; name that differs from its type is written field.Type (dot form); a field
 ;; whose name equals the snake-case of its type is written as the bare type
