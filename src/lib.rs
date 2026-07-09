@@ -37,6 +37,14 @@ impl ComponentSocket {
             standard_socket,
         }
     }
+
+    pub fn kind(&self) -> ComponentSocketKind {
+        self.component_socket_kind
+    }
+
+    pub fn socket(&self) -> &StandardSocket {
+        &self.standard_socket
+    }
 }
 
 impl PersonaIdentity {
@@ -49,6 +57,15 @@ impl PersonaIdentity {
             persona_name,
             component_kind,
             persona_key_label,
+        }
+    }
+}
+
+impl RequestUnimplemented {
+    pub fn new(operation_kind: OperationKind, unimplemented_reason: UnimplementedReason) -> Self {
+        Self {
+            operation_kind,
+            unimplemented_reason,
         }
     }
 }
@@ -74,8 +91,8 @@ impl MentciDaemonConfiguration {
         &self,
         component_socket_kind: ComponentSocketKind,
     ) -> Option<&ComponentSocket> {
-        self.component_sockets().iter().find(|component_socket| {
-            component_socket.component_socket_kind == component_socket_kind
-        })
+        self.component_sockets()
+            .iter()
+            .find(|component_socket| component_socket.kind() == component_socket_kind)
     }
 }
