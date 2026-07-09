@@ -101,8 +101,8 @@ fn reply_variants_round_trip() {
             ConfigurationRejectionReason::ManagerAuthorityRequired,
         )),
         Output::RequestUnimplemented(RequestUnimplemented {
-            operation: OperationKind::Configure,
-            reason: UnimplementedReason::DependencyNotReady,
+            operation_kind: OperationKind::Configure,
+            unimplemented_reason: UnimplementedReason::DependencyNotReady,
         }),
     ];
     for reply in replies {
@@ -124,7 +124,7 @@ fn configuration_finds_socket_by_component_lane() {
         .component_socket(ComponentSocketKind::MetaCriome)
         .expect("meta criome socket");
     assert_eq!(
-        socket.socket.payload().as_str(),
+        socket.standard_socket.payload().as_str(),
         "/run/user/1000/criome-meta.socket"
     );
 }

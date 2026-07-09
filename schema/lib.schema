@@ -48,16 +48,18 @@
 ;;
 ;; GRAMMAR NOTE (current schema main, b3be7d0 — past abae95f). The
 ;; positional struct-field grammar uses explicit field roles: a field with a
-;; name that differs from its type is written field.Type (dot form); a field
-;; whose name equals the snake-case of its type is written as the bare type
-;; (derived name) — writing field.Type there is a RedundantExplicitFieldRole
-;; error; a collection field carries its role as a dot-bound field name,
+;; name that differs from its type is written field.Type (dot form) only when
+;; the same payload type appears more than once in the product. A field whose
+;; type is unique in the product is written as the bare type (derived name) —
+;; writing field.Type there is an ExplicitFieldOnUniqueProductComponent error;
+;; a collection field carries its role as a dot-bound field name,
 ;; FieldRole.(Vector Element), whose snake-case becomes the field name. The
 ;; retired two-atom  field Type  pair no longer lowers. A single-field brace
-;; collapses to a NEWTYPE over its one reference, so StandardSocket, Configured,
-;; and ConfigurationRejected lower as newtypes carrying exactly the one-field
-;; payload — multi-field braces (PersonaIdentity, MentciDaemonConfiguration,
-;; RequestUnimplemented) stay structs.
+;; collapses to a NEWTYPE over its one reference and must use the bare payload
+;; type, so StandardSocket, Configured, and ConfigurationRejected lower as
+;; newtypes carrying exactly the one-field payload — multi-field braces
+;; (PersonaIdentity, MentciDaemonConfiguration, RequestUnimplemented) stay
+;; structs.
 
 ;; -------------------------------------------------------------------
 ;; Input root — the one meta verb. Mirrors meta-signal-criome exactly.
@@ -96,7 +98,7 @@
   ;;  contract is still on stale dot-field notation, Woe 4.)
   ;; -------------------------------------------------------------------
   StandardSocket {
-    path.SocketPath
+    SocketPath
   }
 
   ;; -------------------------------------------------------------------
@@ -114,8 +116,8 @@
     MetaIntrospect
   ]
   ComponentSocket {
-    kind.ComponentSocketKind
-    socket.StandardSocket
+    ComponentSocketKind
+    StandardSocket
   }
 
   ;; -------------------------------------------------------------------
@@ -154,9 +156,9 @@
   ;; store; the daemon never holds the raw key, criome custodies it).
   ;; -------------------------------------------------------------------
   PersonaIdentity {
-    persona.PersonaName
-    speaks_for.ComponentKind
-    signing_key.PersonaKeyLabel
+    PersonaName
+    ComponentKind
+    PersonaKeyLabel
   }
 
   ;; -------------------------------------------------------------------
@@ -193,7 +195,7 @@
   ;; monotonic counter (Q3: a single-machine UI daemon needs no AttestedMoment
   ;; on a local config-generation counter — designer recommendation).
   Configured {
-    generation.ConfigurationGeneration
+    ConfigurationGeneration
   }
 
   ConfigurationRejectionReason [
@@ -202,7 +204,7 @@
     StoreUnavailable
   ]
   ConfigurationRejected {
-    reason.ConfigurationRejectionReason
+    ConfigurationRejectionReason
   }
 
   ;; RequestUnimplemented — the sentinel for a meta verb that is declared but
@@ -212,7 +214,7 @@
   OperationKind [Configure]
   UnimplementedReason [NotBuiltYet DependencyNotReady]
   RequestUnimplemented {
-    operation.OperationKind
-    reason.UnimplementedReason
+    OperationKind
+    UnimplementedReason
   }
 }

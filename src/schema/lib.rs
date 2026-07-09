@@ -84,8 +84,8 @@ pub enum ComponentSocketKind {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct ComponentSocket {
-    pub kind: ComponentSocketKind,
-    pub socket: StandardSocket,
+    pub component_socket_kind: ComponentSocketKind,
+    pub standard_socket: StandardSocket,
 }
 
 #[rustfmt::skip]
@@ -127,9 +127,9 @@ pub enum ComponentKind {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct PersonaIdentity {
-    pub persona: PersonaName,
-    pub speaks_for: ComponentKind,
-    pub signing_key: PersonaKeyLabel,
+    pub persona_name: PersonaName,
+    pub component_kind: ComponentKind,
+    pub persona_key_label: PersonaKeyLabel,
 }
 
 #[rustfmt::skip]
@@ -264,8 +264,8 @@ pub enum UnimplementedReason {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct RequestUnimplemented {
-    pub operation: OperationKind,
-    pub reason: UnimplementedReason,
+    pub operation_kind: OperationKind,
+    pub unimplemented_reason: UnimplementedReason,
 }
 
 #[rustfmt::skip]
