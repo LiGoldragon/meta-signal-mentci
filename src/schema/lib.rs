@@ -84,8 +84,8 @@ pub enum ComponentSocketKind {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct ComponentSocket {
-    pub kind: ComponentSocketKind,
-    pub socket: StandardSocket,
+    pub component_socket_kind: ComponentSocketKind,
+    pub standard_socket: StandardSocket,
 }
 
 #[rustfmt::skip]
@@ -127,9 +127,9 @@ pub enum ComponentKind {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct PersonaIdentity {
-    pub persona: PersonaName,
-    pub speaks_for: ComponentKind,
-    pub signing_key: PersonaKeyLabel,
+    pub persona_name: PersonaName,
+    pub component_kind: ComponentKind,
+    pub persona_key_label: PersonaKeyLabel,
 }
 
 #[rustfmt::skip]
@@ -159,26 +159,10 @@ pub enum NotificationClient {
     derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub(crate) struct ComponentSockets(Vec<ComponentSocket>);
-
-#[rustfmt::skip]
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
-)]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
-pub(crate) struct NotificationClients(Vec<NotificationClient>);
-
-#[rustfmt::skip]
-#[cfg_attr(
-    feature = "nota-text",
-    derive(nota::NotaDecode, nota::NotaDecodeTraced, nota::NotaEncode)
-)]
-#[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct MentciDaemonConfiguration {
-    pub(crate) component_sockets: ComponentSockets,
+    pub component_socket_vector: Vec<ComponentSocket>,
     pub persona_identity: PersonaIdentity,
-    pub(crate) notification_clients: NotificationClients,
+    pub notification_client_vector: Vec<NotificationClient>,
 }
 
 #[rustfmt::skip]
@@ -264,8 +248,8 @@ pub enum UnimplementedReason {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct RequestUnimplemented {
-    pub operation: OperationKind,
-    pub reason: UnimplementedReason,
+    pub operation_kind: OperationKind,
+    pub unimplemented_reason: UnimplementedReason,
 }
 
 #[rustfmt::skip]
@@ -285,9 +269,9 @@ pub enum Input {
 )]
 #[derive(rkyv::Archive, rkyv::Serialize, rkyv::Deserialize, Clone, Debug, PartialEq, Eq)]
 pub enum Output {
-    Configured(Configured),
-    ConfigurationRejected(ConfigurationRejected),
-    RequestUnimplemented(RequestUnimplemented),
+    ConfigurationApplied(Configured),
+    ConfigurationRefused(ConfigurationRejected),
+    OperationUnimplemented(RequestUnimplemented),
 }
 
 #[rustfmt::skip]
@@ -386,44 +370,6 @@ impl From<SocketPath> for StandardSocket {
 }
 
 #[rustfmt::skip]
-impl ComponentSockets {
-    pub fn new(payload: Vec<ComponentSocket>) -> Self {
-        Self(payload)
-    }
-    pub fn payload(&self) -> &Vec<ComponentSocket> {
-        &self.0
-    }
-    pub fn into_payload(self) -> Vec<ComponentSocket> {
-        self.0
-    }
-}
-#[rustfmt::skip]
-impl From<Vec<ComponentSocket>> for ComponentSockets {
-    fn from(payload: Vec<ComponentSocket>) -> Self {
-        Self::new(payload)
-    }
-}
-
-#[rustfmt::skip]
-impl NotificationClients {
-    pub fn new(payload: Vec<NotificationClient>) -> Self {
-        Self(payload)
-    }
-    pub fn payload(&self) -> &Vec<NotificationClient> {
-        &self.0
-    }
-    pub fn into_payload(self) -> Vec<NotificationClient> {
-        self.0
-    }
-}
-#[rustfmt::skip]
-impl From<Vec<NotificationClient>> for NotificationClients {
-    fn from(payload: Vec<NotificationClient>) -> Self {
-        Self::new(payload)
-    }
-}
-
-#[rustfmt::skip]
 impl Configured {
     pub fn new(payload: ConfigurationGeneration) -> Self {
         Self(payload)
@@ -470,14 +416,14 @@ impl Input {
 
 #[rustfmt::skip]
 impl Output {
-    pub fn configured(payload: ConfigurationGeneration) -> Self {
-        Self::Configured(Configured::new(payload))
+    pub fn configuration_applied(payload: ConfigurationGeneration) -> Self {
+        Self::ConfigurationApplied(Configured::new(payload))
     }
-    pub fn configuration_rejected(payload: ConfigurationRejectionReason) -> Self {
-        Self::ConfigurationRejected(ConfigurationRejected::new(payload))
+    pub fn configuration_refused(payload: ConfigurationRejectionReason) -> Self {
+        Self::ConfigurationRefused(ConfigurationRejected::new(payload))
     }
-    pub fn request_unimplemented(payload: RequestUnimplemented) -> Self {
-        Self::RequestUnimplemented(payload)
+    pub fn operation_unimplemented(payload: RequestUnimplemented) -> Self {
+        Self::OperationUnimplemented(payload)
     }
 }
 
@@ -491,21 +437,21 @@ impl From<MentciDaemonConfiguration> for Input {
 #[rustfmt::skip]
 impl From<Configured> for Output {
     fn from(payload: Configured) -> Self {
-        Self::Configured(payload)
+        Self::ConfigurationApplied(payload)
     }
 }
 
 #[rustfmt::skip]
 impl From<ConfigurationRejected> for Output {
     fn from(payload: ConfigurationRejected) -> Self {
-        Self::ConfigurationRejected(payload)
+        Self::ConfigurationRefused(payload)
     }
 }
 
 #[rustfmt::skip]
 impl From<RequestUnimplemented> for Output {
     fn from(payload: RequestUnimplemented) -> Self {
-        Self::RequestUnimplemented(payload)
+        Self::OperationUnimplemented(payload)
     }
 }
 
@@ -544,9 +490,9 @@ impl std::fmt::Display for Output {
 #[rustfmt::skip]
 pub mod short_header {
     pub const INPUT_CONFIGURE: u64 = 0x0000000000000000;
-    pub const OUTPUT_CONFIGURED: u64 = 0x0100000000000000;
-    pub const OUTPUT_CONFIGURATION_REJECTED: u64 = 0x0101000000000000;
-    pub const OUTPUT_REQUEST_UNIMPLEMENTED: u64 = 0x0102000000000000;
+    pub const OUTPUT_CONFIGURATION_APPLIED: u64 = 0x0100000000000000;
+    pub const OUTPUT_CONFIGURATION_REFUSED: u64 = 0x0101000000000000;
+    pub const OUTPUT_OPERATION_UNIMPLEMENTED: u64 = 0x0102000000000000;
 }
 
 #[rustfmt::skip]
@@ -619,9 +565,9 @@ pub enum InputRoute {
     Eq,
 )]
 pub enum OutputRoute {
-    Configured,
-    ConfigurationRejected,
-    RequestUnimplemented,
+    ConfigurationApplied,
+    ConfigurationRefused,
+    OperationUnimplemented,
 }
 
 #[rustfmt::skip]
@@ -689,28 +635,32 @@ impl Input {
 impl Output {
     pub fn route(&self) -> OutputRoute {
         match self {
-            Self::Configured(_) => OutputRoute::Configured,
-            Self::ConfigurationRejected(_) => OutputRoute::ConfigurationRejected,
-            Self::RequestUnimplemented(_) => OutputRoute::RequestUnimplemented,
+            Self::ConfigurationApplied(_) => OutputRoute::ConfigurationApplied,
+            Self::ConfigurationRefused(_) => OutputRoute::ConfigurationRefused,
+            Self::OperationUnimplemented(_) => OutputRoute::OperationUnimplemented,
         }
     }
     pub fn short_header(&self) -> u64 {
         match self {
-            Self::Configured(_) => short_header::OUTPUT_CONFIGURED,
-            Self::ConfigurationRejected(_) => short_header::OUTPUT_CONFIGURATION_REJECTED,
-            Self::RequestUnimplemented(_) => short_header::OUTPUT_REQUEST_UNIMPLEMENTED,
+            Self::ConfigurationApplied(_) => short_header::OUTPUT_CONFIGURATION_APPLIED,
+            Self::ConfigurationRefused(_) => short_header::OUTPUT_CONFIGURATION_REFUSED,
+            Self::OperationUnimplemented(_) => {
+                short_header::OUTPUT_OPERATION_UNIMPLEMENTED
+            }
         }
     }
     pub fn route_from_short_header(
         header: u64,
     ) -> Result<OutputRoute, SignalFrameError> {
         match header {
-            short_header::OUTPUT_CONFIGURED => Ok(OutputRoute::Configured),
-            short_header::OUTPUT_CONFIGURATION_REJECTED => {
-                Ok(OutputRoute::ConfigurationRejected)
+            short_header::OUTPUT_CONFIGURATION_APPLIED => {
+                Ok(OutputRoute::ConfigurationApplied)
             }
-            short_header::OUTPUT_REQUEST_UNIMPLEMENTED => {
-                Ok(OutputRoute::RequestUnimplemented)
+            short_header::OUTPUT_CONFIGURATION_REFUSED => {
+                Ok(OutputRoute::ConfigurationRefused)
+            }
+            short_header::OUTPUT_OPERATION_UNIMPLEMENTED => {
+                Ok(OutputRoute::OperationUnimplemented)
             }
             _ => {
                 Err(SignalFrameError::UnknownHeader {

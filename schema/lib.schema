@@ -1,87 +1,17 @@
-;; meta-signal-mentci — the META policy / authority signal for the mentci
-;; programmable-UI daemon (Spirit 7sx6: signal-<c> + meta-signal-<c> are the
-;; TWO contracts; Signal / Nexus / SEMA are the runtime engines inside the
-;; daemon). This is the second of mentci's two contracts; the ordinary working
-;; wire is signal-mentci (already built + validated). Wire-only: schema-emitted
-;; rkyv plus the optional NOTA codec on the signal-frame request/reply envelope.
-;; No daemon, actor runtime, transport, database, or rendering implementation —
-;; those live in the mentci daemon (mentci-egui / mentci-lib) and its thin
-;; clients. SELF-CONTAINED VOCABULARY.
-;;
-;; Charter (mirrors meta-signal-criome): meta-only authority / configuration.
-;; Ordinary programmable-UI traffic — present a question, push an update,
-;; observe state, answer — stays in signal-mentci. Daemon startup and meta
-;; reconfiguration live HERE. The two share one component identity but two
-;; contracts: the working signal carries traffic, the meta signal carries the
-;; policy that configures who the daemon trusts and how it surfaces itself.
-;;
-;; The single meta verb is Configure, exactly mirroring meta-signal-criome:
-;;   (Configure MentciDaemonConfiguration)
-;;     -> Configured | ConfigurationRejected | RequestUnimplemented
-;;
-;; MentciDaemonConfiguration carries the daemon's startup + reconfiguration
-;; policy (Spirit 7x5z — the state-bearing programmable-UI daemon):
-;;   component_sockets     — typed component connection-points by authority lane
-;;   persona_identity      — the persona Identity that is the signing principal
-;;   notification_clients  — which notification surfaces are enabled
-;;
-;; DAEMON-CONFIG-IS-BINARY (component override): a daemon accepts only a
-;; pre-generated rkyv startup/meta message — never inline NOTA, never a .nota
-;; path. This contract is that binary message's TYPE. A virgin daemon may start
-;; unconfigured and wait for an authenticated binary meta-signal Configure
-;; before it serves; on restart it self-resumes from persisted SEMA state.
-;;
-;; CROSS-IMPORT DEFERRED (Woe 4 / 681). Two types would ideally import from
-;; signal-standard: ComponentKind (the closed component roster) and the eaf7
-;; typed connection-point (StandardSocket). signal-standard is NOT YET A CRATE,
-;; so this contract declares its own local equivalents, each tagged with its
-;; eventual cross-import source. signal-criome is also still on the stale
-;; dot-field notation (Woe 4) and will not lower under current main's positional
-;; grammar, so the criome-facing socket is the local StandardSocket too — no
-;; signal-criome cross-import is attempted. Local types marked
-;;   ;; (cross-import target: signal-standard:lib:…)
-;; identify the eventual import source. When signal-standard lands, the local
-;; ComponentKind / StandardSocket declarations collapse into an import brace
-;;   { ComponentKind signal-standard:lib:ComponentKind
-;;     StandardSocket signal-standard:lib:StandardSocket }
-;; with no other change to the verb roster or the configuration shape.
-;;
-;; GRAMMAR NOTE (current schema main, b3be7d0 — past abae95f). The
-;; positional struct-field grammar uses explicit field roles: a field with a
-;; name that differs from its type is written field.Type (dot form); a field
-;; whose name equals the snake-case of its type is written as the bare type
-;; (derived name) — writing field.Type there is a RedundantExplicitFieldRole
-;; error; a collection field carries its role as a dot-bound field name,
-;; FieldRole.(Vector Element), whose snake-case becomes the field name. The
-;; retired two-atom  field Type  pair no longer lowers. A single-field brace
-;; collapses to a NEWTYPE over its one reference, so StandardSocket, Configured,
-;; and ConfigurationRejected lower as newtypes carrying exactly the one-field
-;; payload — multi-field braces (PersonaIdentity, MentciDaemonConfiguration,
-;; RequestUnimplemented) stay structs.
-
-;; -------------------------------------------------------------------
-;; Input root — the one meta verb. Mirrors meta-signal-criome exactly.
-;; -------------------------------------------------------------------
-[(Configure MentciDaemonConfiguration)]
-
-;; -------------------------------------------------------------------
-;; Output root — the three meta replies. Mirrors meta-signal-criome
-;; exactly: a generation receipt, a typed rejection, an unimplemented
-;; sentinel for verbs not yet wired.
-;; -------------------------------------------------------------------
-[(Configured Configured)
- (ConfigurationRejected ConfigurationRejected)
- (RequestUnimplemented RequestUnimplemented)]
-
+;; Schema 0.3 dotted wire contract.
+{}
+[Configure.MentciDaemonConfiguration]
+[ConfigurationApplied.Configured ConfigurationRefused.ConfigurationRejected OperationUnimplemented.RequestUnimplemented]
 {
+
   ;; -------------------------------------------------------------------
   ;; Primitive newtypes. Distinct newtypes, not transparent aliases
   ;; (Spirit qz6j: aliases offer no correctness and are not used).
   ;; -------------------------------------------------------------------
-  SocketPath Path
-  PersonaName String
-  PersonaKeyLabel String
-  ConfigurationGeneration Integer
+  SocketPath.Path
+  PersonaName.String
+  PersonaKeyLabel.String
+  ConfigurationGeneration.Integer
 
   ;; -------------------------------------------------------------------
   ;; StandardSocket — the eaf7 typed connection-point. A typed Unix-socket
@@ -95,8 +25,8 @@
   ;;  crate. signal-criome's own socket is NOT cross-imported either: that
   ;;  contract is still on stale dot-field notation, Woe 4.)
   ;; -------------------------------------------------------------------
-  StandardSocket {
-    path.SocketPath
+  StandardSocket.{
+    SocketPath
   }
 
   ;; -------------------------------------------------------------------
@@ -105,7 +35,7 @@
   ;; positional "ordinary/meta" fields. The kind names both the component and
   ;; whether the socket is its working or meta-policy channel.
   ;; -------------------------------------------------------------------
-  ComponentSocketKind [
+  ComponentSocketKind.[
     Mentci
     MetaMentci
     Criome
@@ -113,9 +43,9 @@
     Introspect
     MetaIntrospect
   ]
-  ComponentSocket {
-    kind.ComponentSocketKind
-    socket.StandardSocket
+  ComponentSocket.{
+    ComponentSocketKind
+    StandardSocket
   }
 
   ;; -------------------------------------------------------------------
@@ -129,7 +59,7 @@
   ;;  zone-partitioned roster; deferred while signal-standard is not yet a
   ;;  crate. Persona is a principal, not a daemon — see 681 § 2.)
   ;; -------------------------------------------------------------------
-  ComponentKind [
+  ComponentKind.[
     Spirit
     Mind
     Criome
@@ -149,14 +79,14 @@
   ;; -------------------------------------------------------------------
   ;; PersonaIdentity — the signing principal. The persona Identity whose
   ;; sub-key signs the psyche verdict that mentci escalates to criome. Names
-  ;; the persona, the component it speaks for (normally Persona), and the
+  ;; the persona, the component it speaks for normally.Persona, and the
   ;; key label criome decrypts at login (q1le — the encrypted multi-key
   ;; store; the daemon never holds the raw key, criome custodies it).
   ;; -------------------------------------------------------------------
-  PersonaIdentity {
-    persona.PersonaName
-    speaks_for.ComponentKind
-    signing_key.PersonaKeyLabel
+  PersonaIdentity.{
+    PersonaName
+    ComponentKind
+    PersonaKeyLabel
   }
 
   ;; -------------------------------------------------------------------
@@ -165,7 +95,7 @@
   ;; egress. Enabling a client here turns its push path on; the canonical
   ;; InterfaceState (signal-mentci) is what actually fans out to it.
   ;; -------------------------------------------------------------------
-  NotificationClient [
+  NotificationClient.[
     StatusBar
     Popup
     Email
@@ -178,10 +108,10 @@
   ;; configuration included). Carries: typed component sockets, the persona
   ;; signing principal, and which notification surfaces are enabled.
   ;; -------------------------------------------------------------------
-  MentciDaemonConfiguration {
-    ComponentSockets.(Vector ComponentSocket)
+  MentciDaemonConfiguration.{
+    Vector.ComponentSocket
     PersonaIdentity
-    NotificationClients.(Vector NotificationClient)
+    Vector.NotificationClient
   }
 
   ;; -------------------------------------------------------------------
@@ -192,27 +122,29 @@
   ;; advances so the caller can confirm which configuration is live. A plain
   ;; monotonic counter (Q3: a single-machine UI daemon needs no AttestedMoment
   ;; on a local config-generation counter — designer recommendation).
-  Configured {
-    generation.ConfigurationGeneration
+  Configured.{
+    ConfigurationGeneration
   }
 
-  ConfigurationRejectionReason [
+  ConfigurationRejectionReason.[
     ManagerAuthorityRequired
     MalformedConfiguration
     StoreUnavailable
   ]
-  ConfigurationRejected {
-    reason.ConfigurationRejectionReason
+  ConfigurationRejected.{
+    ConfigurationRejectionReason
   }
 
   ;; RequestUnimplemented — the sentinel for a meta verb that is declared but
   ;; not yet wired in this daemon build. OperationKind is the single-verb
-  ;; roster mirroring meta-signal-criome (Configure only); UnimplementedReason
+  ;; roster mirroring meta-signal-criome Configure.only; UnimplementedReason
   ;; distinguishes not-built-yet from a missing dependency.
-  OperationKind [Configure]
-  UnimplementedReason [NotBuiltYet DependencyNotReady]
-  RequestUnimplemented {
-    operation.OperationKind
-    reason.UnimplementedReason
+  OperationKind.[Configure]
+  UnimplementedReason.[NotBuiltYet DependencyNotReady]
+  RequestUnimplemented.{
+    OperationKind
+    UnimplementedReason
   }
 }
+{}
+{}

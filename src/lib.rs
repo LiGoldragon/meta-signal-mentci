@@ -29,7 +29,10 @@ impl StandardSocket {
 
 impl ComponentSocket {
     pub fn new(kind: ComponentSocketKind, socket: StandardSocket) -> Self {
-        Self { kind, socket }
+        Self {
+            component_socket_kind: kind,
+            standard_socket: socket,
+        }
     }
 }
 
@@ -40,9 +43,9 @@ impl PersonaIdentity {
         signing_key: PersonaKeyLabel,
     ) -> Self {
         Self {
-            persona,
-            speaks_for,
-            signing_key,
+            persona_name: persona,
+            component_kind: speaks_for,
+            persona_key_label: signing_key,
         }
     }
 }
@@ -54,19 +57,19 @@ impl MentciDaemonConfiguration {
         notification_clients: Vec<NotificationClient>,
     ) -> Self {
         Self {
-            component_sockets: ComponentSockets::new(component_sockets),
+            component_socket_vector: component_sockets,
             persona_identity,
-            notification_clients: NotificationClients::new(notification_clients),
+            notification_client_vector: notification_clients,
         }
     }
 
     pub fn component_sockets(&self) -> &[ComponentSocket] {
-        self.component_sockets.payload().as_slice()
+        self.component_socket_vector.as_slice()
     }
 
     pub fn component_socket(&self, kind: ComponentSocketKind) -> Option<&ComponentSocket> {
         self.component_sockets()
             .iter()
-            .find(|component_socket| component_socket.kind == kind)
+            .find(|component_socket| component_socket.component_socket_kind == kind)
     }
 }

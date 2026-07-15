@@ -71,7 +71,9 @@ fn assert_reply_round_trips(reply: Output) {
                 SubReply::Ok(payload) => assert_eq!(payload, reply),
                 other => panic!("expected accepted reply payload, got {other:?}"),
             },
-            Reply::Rejected { reason } => panic!("unexpected rejected reply: {reason:?}"),
+            Reply::Rejected { reason } => {
+                panic!("unexpected rejected reply: {reason:?}")
+            }
         },
         other => panic!("expected reply frame, got {other:?}"),
     }
@@ -96,13 +98,13 @@ fn configure_request_round_trips() {
 #[test]
 fn reply_variants_round_trip() {
     let replies = [
-        Output::configured(ConfigurationGeneration::new(7)),
-        Output::ConfigurationRejected(ConfigurationRejected::new(
+        Output::configuration_applied(ConfigurationGeneration::new(7)),
+        Output::ConfigurationRefused(ConfigurationRejected::new(
             ConfigurationRejectionReason::ManagerAuthorityRequired,
         )),
-        Output::RequestUnimplemented(RequestUnimplemented {
-            operation: OperationKind::Configure,
-            reason: UnimplementedReason::DependencyNotReady,
+        Output::OperationUnimplemented(RequestUnimplemented {
+            operation_kind: OperationKind::Configure,
+            unimplemented_reason: UnimplementedReason::DependencyNotReady,
         }),
     ];
     for reply in replies {
@@ -124,7 +126,7 @@ fn configuration_finds_socket_by_component_lane() {
         .component_socket(ComponentSocketKind::MetaCriome)
         .expect("meta criome socket");
     assert_eq!(
-        socket.socket.payload().as_str(),
+        socket.standard_socket.payload().as_str(),
         "/run/user/1000/criome-meta.socket"
     );
 }
