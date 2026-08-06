@@ -1,0 +1,8 @@
+Interface.{1 0 0}
+[signal_standard:lib.[ComponentKind StandardSocket]]
+{
+  []
+  []
+  []
+  [MentciDaemonConfiguration.{ComponentSocket PersonaIdentity NotificationClient} UnimplementedReason.[DependencyNotReady NotBuiltYet] PersonaIdentity.{PersonaName ComponentKind PersonaKeyLabel} ComponentSocketKind.[Mentci Criome MetaCriome MetaMentci Introspect MetaIntrospect] Configured.{ConfigurationGeneration} NotificationClient.[StatusBar Popup Email] PersonaName.String ComponentSocket.{ComponentSocketKind StandardSocket} ConfigurationRejectionReason.[ManagerAuthorityRequired MalformedConfiguration StoreUnavailable] MentciMetaRequest.[Configure.MentciDaemonConfiguration] ConfigurationRejected.{ConfigurationRejectionReason} MentciMetaReply.[OperationUnimplemented.RequestUnimplemented ConfigurationApplied.Configured ConfigurationRefused.ConfigurationRejected] RequestUnimplemented.{OperationKind UnimplementedReason} OperationKind.[Configure] ConfigurationGeneration.Integer PersonaKeyLabel.String]
+}

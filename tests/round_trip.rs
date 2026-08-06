@@ -1,132 +1,62 @@
-use meta_signal_mentci::{
-    ComponentKind, ComponentSocket, ComponentSocketKind, ConfigurationGeneration,
-    ConfigurationRejected, ConfigurationRejectionReason, Frame, FrameBody, Input,
-    MentciDaemonConfiguration, NotificationClient, OperationKind, Output, PersonaIdentity,
-    PersonaKeyLabel, PersonaName, RequestUnimplemented, StandardSocket, UnimplementedReason,
-};
-use nota::{NotaDecode, NotaEncode, NotaSource};
-use signal_frame::{
-    ExchangeIdentifier, ExchangeLane, LaneSequence, NonEmpty, Reply, RequestPayload, SessionEpoch,
-    SubReply,
-};
+use dotos::{DotosEncode, DotosSource};
+use meta_signal_mentci::*;
 
-fn exchange() -> ExchangeIdentifier {
-    ExchangeIdentifier::new(
-        SessionEpoch::new(1),
-        ExchangeLane::Connector,
-        LaneSequence::first(),
+fn exchange() -> signal_frame::ExchangeIdentifier {
+    signal_frame::ExchangeIdentifier::new(
+        signal_frame::SessionEpoch::new(1),
+        signal_frame::ExchangeLane::Connector,
+        signal_frame::LaneSequence::first(),
     )
 }
 
-fn configuration() -> MentciDaemonConfiguration {
-    MentciDaemonConfiguration::new(
-        vec![
-            ComponentSocket::new(
-                ComponentSocketKind::Mentci,
-                StandardSocket::unix("/run/user/1000/mentci.socket"),
+#[test]
+fn authority_projected_request_round_trips_through_dotos_and_the_bound_frame() {
+    let request = z2VXjF::z2VXSA(z2Vf6b {
+        field_0: z2Vf1e {
+            field_0: z2Vc6q::z2Vbzp,
+            field_1: signal_standard::schema::lib::z2VduW::z2VUkE(
+                signal_standard::schema::lib::z2VXNY::new("/run/fixture.sock".to_owned()),
             ),
-            ComponentSocket::new(
-                ComponentSocketKind::MetaCriome,
-                StandardSocket::unix("/run/user/1000/criome-meta.socket"),
-            ),
-        ],
-        PersonaIdentity::new(
-            PersonaName::new("psyche"),
-            ComponentKind::Persona,
-            PersonaKeyLabel::new("home-verdict"),
-        ),
-        vec![NotificationClient::StatusBar, NotificationClient::Popup],
-    )
-}
-
-fn assert_request_round_trips(request: Input) {
-    let frame = Frame::new(FrameBody::Request {
-        exchange: exchange(),
-        request: request.clone().into_request(),
-    });
-    let bytes = frame.encode_length_prefixed().expect("encode request");
-    let decoded = Frame::decode_length_prefixed(&bytes).expect("decode request");
-    match decoded.into_body() {
-        FrameBody::Request {
-            request: decoded_request,
-            ..
-        } => assert_eq!(decoded_request.payloads().head(), &request),
-        other => panic!("expected request frame, got {other:?}"),
-    }
-}
-
-fn assert_reply_round_trips(reply: Output) {
-    let frame = Frame::new(FrameBody::Reply {
-        exchange: exchange(),
-        reply: Reply::committed(NonEmpty::single(SubReply::Ok(reply.clone()))),
-    });
-    let bytes = frame.encode_length_prefixed().expect("encode reply");
-    let decoded = Frame::decode_length_prefixed(&bytes).expect("decode reply");
-    match decoded.into_body() {
-        FrameBody::Reply {
-            reply: decoded_reply,
-            ..
-        } => match decoded_reply {
-            Reply::Accepted { per_operation, .. } => match per_operation.into_head() {
-                SubReply::Ok(payload) => assert_eq!(payload, reply),
-                other => panic!("expected accepted reply payload, got {other:?}"),
-            },
-            Reply::Rejected { reason } => {
-                panic!("unexpected rejected reply: {reason:?}")
-            }
         },
-        other => panic!("expected reply frame, got {other:?}"),
-    }
-}
-
-fn assert_nota_round_trips<Value>(value: &Value)
-where
-    Value: NotaEncode + NotaDecode + PartialEq + std::fmt::Debug,
-{
-    let text = value.to_nota();
-    let recovered = NotaSource::new(&text).parse::<Value>().expect("decode");
-    assert_eq!(&recovered, value);
-}
-
-#[test]
-fn configure_request_round_trips() {
-    let request = Input::Configure(configuration());
-    assert_request_round_trips(request.clone());
-    assert_nota_round_trips(&request);
-}
-
-#[test]
-fn reply_variants_round_trip() {
-    let replies = [
-        Output::configuration_applied(ConfigurationGeneration::new(7)),
-        Output::ConfigurationRefused(ConfigurationRejected::new(
-            ConfigurationRejectionReason::ManagerAuthorityRequired,
-        )),
-        Output::OperationUnimplemented(RequestUnimplemented {
-            operation_kind: OperationKind::Configure,
-            unimplemented_reason: UnimplementedReason::DependencyNotReady,
-        }),
-    ];
-    for reply in replies {
-        assert_reply_round_trips(reply.clone());
-        assert_nota_round_trips(&reply);
-    }
-}
-
-#[test]
-fn configuration_generation_projects_to_integer() {
-    let generation = ConfigurationGeneration::new(11);
-    assert_eq!(generation.value(), 11);
-}
-
-#[test]
-fn configuration_finds_socket_by_component_lane() {
-    let configuration = configuration();
-    let socket = configuration
-        .component_socket(ComponentSocketKind::MetaCriome)
-        .expect("meta criome socket");
+        field_1: z2Vezw {
+            field_0: z2VNuw::new("fixture".to_owned()),
+            field_1: signal_standard::schema::lib::z2VWWD::z2VSDw,
+            field_2: z2VbaN::new("fixture".to_owned()),
+        },
+        field_2: z2VRQy::z2VTjW,
+    });
+    let text = request.to_dotos();
     assert_eq!(
-        socket.standard_socket.payload().as_str(),
-        "/run/user/1000/criome-meta.socket"
+        DotosSource::new(&text)
+            .parse::<z2VXjF>()
+            .expect("request Dotos decodes"),
+        request
     );
+    let encoded = request
+        .clone()
+        .encode_request_frame(exchange())
+        .expect("request frame encodes");
+    let (decoded_exchange, decoded) =
+        ContractMarker::decode_single_request(&encoded).expect("request frame decodes");
+    assert_eq!(decoded_exchange, exchange());
+    assert_eq!(decoded, request);
+}
+
+#[test]
+fn authority_projected_reply_round_trips_through_dotos_and_archive_storage() {
+    let reply = z2VV4Q::z2VbZm(z2VUw2 {
+        field_0: z2VZgH::z2VT2e,
+        field_1: z2VcWY::z2VLm7,
+    });
+    let text = reply.to_dotos();
+    assert_eq!(
+        DotosSource::new(&text)
+            .parse::<z2VV4Q>()
+            .expect("reply Dotos decodes"),
+        reply
+    );
+    let archive = rkyv::to_bytes::<rkyv::rancor::Error>(&reply).expect("reply archives");
+    let recovered =
+        rkyv::from_bytes::<z2VV4Q, rkyv::rancor::Error>(&archive).expect("reply recovers");
+    assert_eq!(recovered, reply);
 }

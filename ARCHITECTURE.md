@@ -1,20 +1,21 @@
 # meta-signal-mentci - architecture
 
 `meta-signal-mentci` is the owner/meta configuration contract for the Mentci
-daemon. It is schema-derived wire vocabulary over `signal-frame`, with optional
-NOTA projection for edge clients.
+daemon. Its producer-owned `ethos/interface.ethos` is the sole structural
+authority; strict projection supplies encoded Rust identities, Dotos text,
+rkyv storage, and the bound `signal-frame` envelope.
 
 ## 0.5 · Direction
 
-`meta-signal-mentci` is the meta policy contract for the Mentci daemon. Ordinary programmable-UI traffic lives in `signal-mentci`; this crate carries the single `Configure` request that provides the binary startup/reconfiguration message — socket endpoints, home criome socket, persona identity, and enabled notification clients. Daemons accept binary rkyv startup/meta messages, not inline NOTA or `.nota` paths.
+`meta-signal-mentci` is the meta policy contract for the Mentci daemon. Ordinary programmable-UI traffic lives in `signal-mentci`; this crate carries the single `Configure` request that provides the binary startup/reconfiguration message — socket endpoints, home criome socket, persona identity, and enabled notification clients.
 
 ## Owned
 
 - `Configure MentciDaemonConfiguration`.
 - `Configured`, `ConfigurationRejected`, and `RequestUnimplemented` replies.
-- `MentciDaemonConfiguration`, `PersonaIdentity`, `NotificationClient`, and the
-  local `StandardSocket`/`ComponentKind` stand-ins until `signal-standard` is a
-  remote dependency.
+- `MentciDaemonConfiguration`, `PersonaIdentity`, and `NotificationClient`.
+- The placement of producer-owned `signal-standard` `StandardSocket` and
+  `ComponentKind` values in Mentci configuration.
 
 ## Not Owned
 
