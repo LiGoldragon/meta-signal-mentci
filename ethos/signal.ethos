@@ -1,0 +1,24 @@
+; The meta Mentci Signal contract: configuration only.
+;
+; Which sockets the daemon seats, which persona identity it speaks as, and
+; where it sends notifications.
+Signal
+[ signal:[ ComponentKind StandardSocket ] ]
+[ Configure.MentciDaemonConfiguration ]
+[ OperationUnimplemented.RequestUnimplemented
+  ConfigurationApplied.Configured
+  ConfigurationRefused.ConfigurationRejected ]
+[ MentciDaemonConfiguration.{ ComponentSocket PersonaIdentity NotificationClient }
+  UnimplementedReason.[ DependencyNotReady NotBuiltYet ]
+  PersonaIdentity.{ PersonaName ComponentKind PersonaKeyLabel }
+  ComponentSocketKind.[ Mentci Criome MetaCriome MetaMentci Introspect MetaIntrospect ]
+  Configured.{ ConfigurationGeneration }
+  NotificationClient.[ StatusBar Popup Email ]
+  PersonaName.String
+  ComponentSocket.{ ComponentSocketKind StandardSocket }
+  ConfigurationRejectionReason.[ ManagerAuthorityRequired MalformedConfiguration StoreUnavailable ]
+  ConfigurationRejected.{ ConfigurationRejectionReason }
+  RequestUnimplemented.{ OperationKind UnimplementedReason }
+  OperationKind.[ Configure ]
+  ConfigurationGeneration.Integer
+  PersonaKeyLabel.String ]

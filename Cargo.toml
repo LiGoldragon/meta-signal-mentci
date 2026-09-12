@@ -1,35 +1,31 @@
 [package]
-name = "meta-signal-mentci"
-version = "0.3.2"
-edition = "2024"
+name         = "meta-signal-mentci"
+version      = "1.0.0"
+edition      = "2024"
 rust-version = "1.89"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/LiGoldragon/meta-signal-mentci"
-description = "Authority-verified Mentci meta-policy Interface."
-publish = false
-links = "meta-signal-mentci"
-build = "build.rs"
+license      = "MIT OR Apache-2.0"
+repository   = "https://github.com/LiGoldragon/meta-signal-mentci"
+description  = "Meta Signal configuration contract for Mentci."
+publish      = false
+build        = "build.rs"
+
 [lib]
 name = "meta_signal_mentci"
 path = "src/lib.rs"
+
 [features]
-default = ["dotos-text"]
-dotos-text = ["dep:dotos", "signal-frame/dotos-text", "signal-standard/dotos-text"]
+default = []
+datom = ["dep:datom-codec", "dep:protos", "signal/datom"]
+
 [dependencies]
-dotos = { package = "dotos", git = "https://github.com/LiGoldragon/dotos.git", rev = "80c7b17f7ad3cf547d2624c6a243e5de5f85c9f3", optional = true }
+datom-codec = { git = "https://github.com/LiGoldragon/datom-codec", rev = "627db67f2655efd9f786864009955005fd8ab2ad", optional = true }
+protos = { git = "https://github.com/LiGoldragon/protos", rev = "171b21f65337983ab624b7b906397a4f1f92c5a3", optional = true }
 rkyv = { version = "0.8", default-features = false, features = ["std", "bytecheck", "little_endian", "pointer_width_32", "unaligned"] }
-signal-frame = { git = "https://github.com/LiGoldragon/signal-frame.git", rev = "80f70d929ae6d72707052f097be2264872913983", default-features = false }
-signal-standard = { git = "https://github.com/LiGoldragon/signal-standard.git", rev = "f12d0cb9e4809e13002b4e6eedf64398a23cd8dc", default-features = false }
-thiserror = "2"
+signal = { git = "https://github.com/LiGoldragon/signal", rev = "8f9a0deb701cebbea518679548df4a795affc918", default-features = false }
+
 [build-dependencies]
-core-ethos = { git = "https://github.com/LiGoldragon/core-ethos.git", rev = "43b48c779c54ee9f05cbcc111d5d88074b162461" }
-name-table = { git = "https://github.com/LiGoldragon/name-table.git", rev = "a22f48d8040ab9235f3552ad8654ff8e27b8157d" }
-rust-logos = { git = "https://github.com/LiGoldragon/rust-logos.git", rev = "081e99596826b15e2ff7f1356ae8d797b18aeffc" }
-schema-rust = { package = "schema-rust", git = "https://github.com/LiGoldragon/schema-rust.git", rev = "664335240a40728826cfaa09e3100cd867031912", default-features = false }
-sema-translator = { git = "https://github.com/LiGoldragon/sema-translator.git", rev = "287fbd728a05b1a6be1dc8a28bcf3ca06d9916b3", default-features = false, features = ["bootstrap"] }
-signal-sema-translator = { git = "https://github.com/LiGoldragon/signal-sema-translator.git", rev = "3f41813dd63904c7e2b3da4382eff64ed1bf12fe" }
-structural-codec = { git = "https://github.com/LiGoldragon/structural-codec.git", rev = "879d76f91facedd6d5cbca79e282260e1beb9478" }
-signal-standard = { git = "https://github.com/LiGoldragon/signal-standard.git", rev = "f12d0cb9e4809e13002b4e6eedf64398a23cd8dc", default-features = false }
+ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "de3d9928b156f2e1a92d060b7817af201abfdbef" }
+
 [lints.rust]
 unsafe_code = "forbid"
 unused = { level = "warn", priority = -1 }

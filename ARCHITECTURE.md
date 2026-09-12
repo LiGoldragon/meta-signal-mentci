@@ -1,31 +1,40 @@
-# meta-signal-mentci - architecture
+# meta-signal-mentci architecture
 
-`meta-signal-mentci` is the owner/meta configuration contract for the Mentci
-daemon. Its producer-owned `ethos/interface.ethos` is the sole structural
-authority; strict projection supplies encoded Rust identities, Dotos text,
-rkyv storage, and the bound `signal-frame` envelope.
+## Center
 
-## 0.5 · Direction
+This repository owns the privileged Mentci surface: what a manager may set,
+and what it is told in return. It owns no policy, no storage, no daemon, and
+nothing a human ever sees.
 
-`meta-signal-mentci` is the meta policy contract for the Mentci daemon. Ordinary programmable-UI traffic lives in `signal-mentci`; this crate carries the single `Configure` request that provides the binary startup/reconfiguration message — socket endpoints, home criome socket, persona identity, and enabled notification clients.
+## Authority and projection
 
-## Owned
+`ethos/signal.ethos` is the sole textual source — a `Signal` root holding the
+import list, the request variants, the reply variants, and the type
+declarations. `ethos-zero` projects it into `src/generated/signal.rs`, which
+is committed; `build.rs` generates afresh and asserts equality, so a build
+cannot succeed while source and projection differ.
 
-- `Configure MentciDaemonConfiguration`.
-- `Configured`, `ConfigurationRejected`, and `RequestUnimplemented` replies.
-- `MentciDaemonConfiguration`, `PersonaIdentity`, and `NotificationClient`.
-- The placement of producer-owned `signal-standard` `StandardSocket` and
-  `ComponentKind` values in Mentci configuration.
+`src/lib.rs` re-exports the projection and nothing else. Every name a
+consumer writes is a name the ethos declares.
 
-## Not Owned
+The request and reply roots are named `Query` and `Response` — `ethos-zero`
+names them, not this contract.
 
-- Working UI traffic. That lives in `signal-mentci`.
-- The daemon runtime, actors, durable state, and sockets.
-- Criome key custody and verdict signing.
+## Two socket vocabularies, and why both
 
-## Invariants
+`ComponentSocketKind` says which of Mentci's own sockets a configuration
+seats: the ordinary and meta sockets of Mentci, Criome and Introspect.
+`signal::ComponentKind` says which component in the estate a persona identity
+belongs to. They are different questions, so they are different types; the
+first is Mentci's own, the second is the estate's and is imported.
 
-- There is one meta verb: `Configure`.
-- Configuration generation is a plain monotonic counter.
-- The contract is wire-only: no daemon clients, runtime policy, redb tables, or
-  actors.
+`signal::ComponentKind` carries no `Mentci` variant. That is the shared
+taxonomy's gap, not this contract's, and this contract does not paper over it
+with a local copy.
+
+## Boundaries
+
+`signal` for the frame, the wire framing and the taxonomy; `rkyv` for the
+archive; under the optional `datom` feature, `datom-codec` and `protos` for
+the Datom text projection. Nothing else, and nothing here reaches a
+filesystem, a socket, or a clock.

@@ -1,0 +1,7 @@
+; Canonical Datom examples for meta-signal-mentci.
+; Written by `rewrite_the_canonical_file`; never spelled by hand.
+
+Configure.{ { Mentci UnixSocket./run/mentci/data.sock } { operator Persona operator-key } StatusBar }
+ConfigurationApplied.{ 7 }
+ConfigurationRefused.{ ManagerAuthorityRequired }
+OperationUnimplemented.{ Configure DependencyNotReady }
