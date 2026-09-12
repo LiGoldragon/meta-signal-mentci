@@ -26,8 +26,12 @@
         craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
         ethosFilter = path: type:
           type == "regular" && pkgs.lib.hasSuffix ".ethos" path;
+        examplesFilter = path: _type: builtins.match ".*/examples(/.*)?$" path != null;
         sourceFilter = path: type:
-          type == "directory" || (craneLib.filterCargoSources path type) || (ethosFilter path type);
+          type == "directory"
+          || (craneLib.filterCargoSources path type)
+          || (ethosFilter path type)
+          || (examplesFilter path type);
         src = pkgs.lib.cleanSourceWith {
           src = ./.;
           filter = sourceFilter;
@@ -41,13 +45,13 @@
         checks = {
           build = craneLib.cargoBuild (commonArgs // { inherit cargoArtifacts; });
           test = craneLib.cargoTest (commonArgs // { inherit cargoArtifacts; });
-          test-generated-contract = craneLib.cargoTest (commonArgs // {
+          test-contract = craneLib.cargoTest (commonArgs // {
             inherit cargoArtifacts;
-            cargoTestExtraArgs = "--test generated_contract";
+            cargoTestExtraArgs = "--test contract";
           });
           test-datom = craneLib.cargoTest (commonArgs // {
             inherit cargoArtifacts;
-            cargoTestExtraArgs = "--features datom --test generated_contract";
+            cargoTestExtraArgs = "--features datom --test contract";
           });
           test-doc = craneLib.cargoTest (commonArgs // {
             inherit cargoArtifacts;

@@ -32,6 +32,18 @@ first is Mentci's own, the second is the estate's and is imported.
 taxonomy's gap, not this contract's, and this contract does not paper over it
 with a local copy.
 
+## The producer cut this contract is generated against
+
+`ethos-zero` 9.0.0 `b232d35e`, whose projection derives
+`datom_codec::Composing` from the split composing kind that `datom-codec`
+0.27.0 `6dccc76b` reintroduced arity into; `signal` 5.0.0 `7bcb0949`,
+generated against the same pair; `protos` 0.30.1 `171b21f6`.
+
+These four move together and are spelled identically everywhere, without a
+`.git` suffix: cargo source identity is the pin string, not the commit, and
+`signal` carries `links = "signal"`, which admits exactly one package per
+graph.
+
 ## Boundaries
 
 `signal` for the frame, the wire framing and the taxonomy; `rkyv` for the

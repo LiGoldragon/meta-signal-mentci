@@ -2,23 +2,21 @@
 //! every canonical Datom line is the codec's own text for one of them.
 
 use meta_signal_mentci::{
-    ComponentSocket, ComponentSocketKind, ConfigurationRejected, ConfigurationRejectionReason,
-    Configured, MentciDaemonConfiguration, NotificationClient, OperationKind, PersonaIdentity,
-    Query, RequestUnimplemented, Response, UnimplementedReason,
+    ByteViewable, ComponentKind, ComponentSocket, ComponentSocketKind, ConfigurationRejected,
+    ConfigurationRejectionReason, Configured, MentciDaemonConfiguration, NotificationClient,
+    OperationKind, PersonaIdentity, Query, RequestUnimplemented, Response, Restorable, Signal,
+    Signalizable, StandardSocket, UnimplementedReason,
 };
-use signal::{ByteViewable, Restorable, Signal, Signalizable};
 
 fn configuration() -> MentciDaemonConfiguration {
     MentciDaemonConfiguration {
         component_socket: ComponentSocket {
             component_socket_kind: ComponentSocketKind::Mentci,
-            standard_socket: signal::StandardSocket::UnixSocket(String::from(
-                "/run/mentci/data.sock",
-            )),
+            standard_socket: StandardSocket::UnixSocket(String::from("/run/mentci/data.sock")),
         },
         persona_identity: PersonaIdentity {
             persona_name: String::from("operator"),
-            component_kind: signal::ComponentKind::Persona,
+            component_kind: ComponentKind::Persona,
             persona_key_label: String::from("operator-key"),
         },
         notification_client: NotificationClient::StatusBar,
